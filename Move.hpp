@@ -9,6 +9,9 @@
 #include <string>
 
 class Move {
+    Square mvFrom, mvTo;
+    std::optional<PieceType> mvPromotion = std::nullopt;
+
 public:
 
     using Optional = std::optional<Move>;

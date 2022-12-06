@@ -2,37 +2,105 @@
 
 #include <ostream>
 
-Square::Square(Index index)
+Square::Square(Index index) 
 {
-    (void)index;
+    squareIndex  =  index;
+    squareFile = index % 8;
+    squareRank = index / 8;
 }
 
 Square::Optional Square::fromCoordinates(Coordinate file, Coordinate rank) {
-    (void)file;
-    (void)rank;
-    return std::nullopt;
+    if (file >= 8 || rank >= 8)
+        return std::nullopt;
+    else
+        return Square(8 * rank + file);
 }
 
 Square::Optional Square::fromIndex(Index index) {
-    (void)index;
-    return std::nullopt;
+    if(index >= 0 && index < 64)
+        return Square(index);
+    else
+        return std::nullopt;
 }
 
 Square::Optional Square::fromName(const std::string& name) {
-    (void)name;
-    return std::nullopt;
+    if(name.length() != 2)
+        return std::nullopt;
+    char charFile = name[0];
+    char charRank = name[1];
+    unsigned file, rank;
+
+    switch (charFile)
+    {
+    case 'a':
+        file = 0;
+        break;
+    case 'b':
+        file = 1;
+        break;
+    case 'c':
+        file = 2;
+        break;
+    case 'd':
+        file = 3;
+        break;
+    case 'e':
+        file = 4;
+        break;
+    case 'f':
+        file = 5;
+        break;
+    case 'g':
+        file = 6;
+        break;
+    case 'h':
+        file = 7;
+        break;
+    default:
+        return std::nullopt;
+    }
+    switch (charRank)
+    {
+    case '1':
+        rank = 0;
+        break;
+    case '2':
+        rank = 1;
+        break;
+    case '3':
+        rank = 2;
+        break;  
+    case '4':
+        rank = 3;
+        break;
+    case '5':
+        rank = 4;
+        break;
+    case '6':
+        rank = 5;
+        break;
+    case '7':
+        rank = 6;
+        break;
+    case '8':
+        rank = 7;
+        break;
+    default:
+        return std::nullopt;
+    }
+    return fromCoordinates(file, rank);
 }
 
 Square::Coordinate Square::file() const {
-    return 0;
+    return squareFile;
 }
 
 Square::Coordinate Square::rank() const {
-    return 0;
+    return squareRank;
 }
 
 Square::Index Square::index() const {
-    return 0;
+    return squareIndex;
 }
 
 
@@ -109,18 +177,82 @@ const Square Square::G8 = Square(56 + 6);
 const Square Square::H8 = Square(56 + 7);
 
 std::ostream& operator<<(std::ostream& os, const Square& square) {
-    (void)square;
+    char charRank, charFile;
+    switch (square.rank())
+    {
+    case 0:
+        charRank = '1'; 
+        break;
+    case 1:
+        charRank = '2';
+        break;
+    case 2:
+        charRank = '3';
+        break;
+    case 3:
+        charRank = '4';
+        break;
+    case 4:
+        charRank = '5';
+        break;
+    case 5:
+        charRank = '6';
+        break;
+    case 6:
+        charRank = '7';
+        break;
+    case 7:
+        charRank = '8';
+        break;
+    default:
+        charRank = '?';
+    }
+
+    switch (square.file())
+    {
+    case 0:
+        charFile = 'a';
+        break;
+    case 1:
+        charFile = 'b';
+        break;
+    case 2:
+        charFile = 'c';
+        break;
+    case 3:
+        charFile = 'd';
+        break;
+    case 4:
+        charFile = 'e';
+        break;
+    case 5:
+        charFile = 'f';
+        break;
+    case 6:
+        charFile = 'g';
+        break;
+    case 7:
+        charFile = 'h';
+        break;
+    default:
+        charFile = '?';
+    }
+
+    os << charFile;
+    os << charRank;
     return os;
 }
 
 bool operator<(const Square& lhs, const Square& rhs) {
-    (void)lhs;
-    (void)rhs;
-    return false;
+    if(lhs.index() < rhs.index())
+        return true;
+    else 
+        return false;
 }
 
 bool operator==(const Square& lhs, const Square& rhs) {
-    (void)lhs;
-    (void)rhs;
-    return false;
+    if (lhs.index() == rhs.index() && lhs.rank() == rhs.rank() && lhs.file() == rhs.file())
+        return true;
+    else 
+        return false;
 }

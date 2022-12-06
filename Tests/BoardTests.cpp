@@ -26,14 +26,12 @@ TEST_CASE("A default-constructed board is empty", "[Board][Fundamental]") {
 
 TEST_CASE("Pieces can be set on a board", "[Board][Fundamental]") {
     auto board = Board();
-
     auto optSquare = Square::fromIndex(41);
     REQUIRE(optSquare.has_value());
 
     auto square = optSquare.value();
     auto piece = Piece(PieceColor::White, PieceType::Rook);
     board.setPiece(square, piece);
-
     auto optSetPiece = board.piece(square);
     REQUIRE(optSetPiece.has_value());
 
@@ -129,8 +127,70 @@ static void testPseudoLegalMoves(
     REQUIRE(generatedMoves == expectedMoves);
 }
 
+static void testEvaluation(
+    const char* fen,
+    const int expectedScore)
+{
+    auto optBoard = Fen::createBoard(fen);
+    REQUIRE(optBoard.has_value());
+
+    auto from = Square::Optional();
+
+    auto board = optBoard.value();
+
+    using MoveSet = std::set<Move>;
+    auto expectedMoves = MoveSet();
+
+    auto genaretedScore = board.evaluate();
+
+    CAPTURE(fen, genaretedScore, expectedScore);
+    REQUIRE(genaretedScore == expectedScore);
+}
+
+#define TEST_CASE_EVALUATION(name, tag) \
+    TEST_CASE(name, "[Evaluation][myTest]" tag)
+
+TEST_CASE_EVALUATION("empty Board", "[myTest]") {
+    testEvaluation(
+        // https://lichess.org/editor/8/8/8/8/8/8/8/8_w_-_-_0_1?color=white
+        "8/8/8/8/8/8/8/8 w - - 0 1",
+        0
+    );
+}
+
+TEST_CASE_EVALUATION("1 pawn Board", "[myTest]") {
+    testEvaluation(
+        // https://lichess.org/editor/8/8/8/8/8/8/8/8_w_-_-_0_1?color=white
+        "8/8/8/8/8/8/4P3/8 w - - 0 1",
+        241
+    );
+}
+
 #define TEST_CASE_PSEUDO_MOVES(name, tag) \
     TEST_CASE(name, "[Board][MoveGen]" tag)
+
+
+TEST_CASE_PSEUDO_MOVES("Check legal moves king", "[myTest]") {
+    testPseudoLegalMoves(
+        // https://lichess.org/editor/8/8/8/8/4b3/8/5PK1/8_w_-_-_0_1?color=white
+        "8/8/8/8/4b3/8/5PK1/8 w - - 0 1",
+        "g2",
+        {
+             "f1", "g1", "h2", "g3", "h3"
+        }
+    );
+}
+
+TEST_CASE_PSEUDO_MOVES("Check legal moves pawn", "[myTest]") {
+    testPseudoLegalMoves(
+        // https://lichess.org/editor/8/8/8/8/4b3/8/5PK1/8_w_-_-_0_1?color=white
+        "8/8/8/8/4b3/8/5PK1/8 w - - 0 1",
+        "f2",
+        {
+             "f3"
+        }
+    );
+}
 
 TEST_CASE_PSEUDO_MOVES("Pseudo-legal knight moves, empty board", "[Knight]") {
     testPseudoLegalMoves(

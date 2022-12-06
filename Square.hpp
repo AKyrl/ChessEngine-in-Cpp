@@ -32,6 +32,8 @@ public:
 private:
 
     Square(Index index);
+    Index squareIndex;
+    Coordinate squareRank, squareFile;
 };
 
 std::ostream& operator<<(std::ostream& os, const Square& square);

@@ -35,11 +35,14 @@ add_library(cplchess_lib OBJECT
     Engine.cpp
     EngineFactory.cpp
     Uci.cpp
-)
+    BitboardHelper.cpp 
+    AttackHelper.cpp 
+    ChessEngine.cpp
+    )
 
 target_include_directories(cplchess_lib PUBLIC .)
 
-add_executable(cplchess Main.cpp)
+add_executable(cplchess Main.cpp )
 target_link_libraries(cplchess cplchess_lib)
 
 include(CTest)

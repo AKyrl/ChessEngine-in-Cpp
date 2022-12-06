@@ -2,6 +2,7 @@
 #define CHESS_ENGINE_ENGINEFACTORY_HPP
 
 #include "Engine.hpp"
+#include <ChessEngine.hpp>
 
 #include <memory>
 

@@ -6,14 +6,24 @@
 
 #include <iosfwd>
 #include <cstddef>
+#include <vector>
 
 class PrincipalVariation {
+
+    int endScore;
+    bool endInMate;
+
 public:
 
-    using MoveIter = Move*;
+    using MoveIter = const Move*;
+
+    std::vector<Move> pvMoves;
 
     bool isMate() const;
     int score() const;
+
+    void setMate( bool mate);
+    void setScore( int score);
 
     std::size_t length() const;
     MoveIter begin() const;

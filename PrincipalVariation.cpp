@@ -1,29 +1,49 @@
 #include "PrincipalVariation.hpp"
+#include "PrincipalVariation.hpp"
+#include "PrincipalVariation.hpp"
 
 #include <ostream>
 
 
 bool PrincipalVariation::isMate() const {
-    return false;
+    return endInMate;
 }
 
 int PrincipalVariation::score() const {
-    return 0;
+    if (isMate())
+        return (int)length();
+    else 
+        return endScore;
+}
+
+void PrincipalVariation::setMate( bool mate)
+{
+    endInMate = mate;
+}
+
+void PrincipalVariation::setScore( int score)
+{
+    endScore = score;
 }
 
 std::size_t PrincipalVariation::length() const {
-    return 0;
+    return pvMoves.size();
 }
 
 PrincipalVariation::MoveIter PrincipalVariation::begin() const {
-    return nullptr;
+    return pvMoves.data();
 }
 
 PrincipalVariation::MoveIter PrincipalVariation::end() const {
-    return nullptr;
+   // auto last = pvMoves.data()[pvMoves.size()]; // get last object of vector
+    return &pvMoves.data()[pvMoves.size()];
 }
 
 std::ostream& operator<<(std::ostream& os, const PrincipalVariation& pv) {
-    (void)pv;
+   
+    for (auto it = pv.begin(); it != pv.end(); it++) {
+        os << *it << ' ';
+    }
+
     return os;
 }

@@ -18,6 +18,8 @@ enum class PieceType {
     King
 };
 
+//bool operator<(const PieceType& lhs, const PieceType& rhs);
+
 class Piece {
     PieceColor piece_color;
     PieceType piece_type;
@@ -38,5 +40,8 @@ std::ostream& operator<<(std::ostream& os, const Piece& piece);
 
 // Invert a color (White becomes Black and vice versa)
 PieceColor operator!(PieceColor color);
+
+std::ostream& operator<<(std::ostream& os, const PieceType& piece);
+std::ostream& operator<<(std::ostream& os, const PieceColor& color);
 
 #endif

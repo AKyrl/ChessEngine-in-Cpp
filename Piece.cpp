@@ -55,6 +55,8 @@ bool operator==(const Piece& lhs, const Piece& rhs) {
         return false;
 }
 
+
+
 std::ostream& operator<<(std::ostream& os, const Piece& piece) {
     PieceColor c = piece.color();
     PieceType t = piece.type();
@@ -121,4 +123,79 @@ PieceColor operator!(PieceColor color) {
         return PieceColor::Black;
     else
         return PieceColor::White;
+}
+
+//create piece type ordering
+int rank(PieceType piece)
+{
+    switch (piece)
+    {
+    case PieceType::Pawn:
+        return 1;
+        break;
+    case PieceType::Knight:
+        return 3;
+        break;
+    case PieceType::Bishop:
+        return 4; //actual value is 3 upgraded for different rank
+        break;
+    case PieceType::Rook:
+        return 5;
+        break;
+    case PieceType::Queen:
+        return 9;
+        break;
+    case PieceType::King:
+        return 10; //normally does not have a rank
+        break;
+    default:
+        return 0;
+    }
+}
+
+//bool operator<(const PieceType& lhs, const PieceType& rhs) {
+//    if (rank(lhs) < rank(rhs))
+//        return true;
+//    else
+//        return false;
+//}
+
+std::ostream& operator<<(std::ostream& os, const PieceColor& color) {
+    if (color == PieceColor::White)
+        os << "White";
+    else if (color == PieceColor::Black)
+        os << "Black";
+    else
+        os << "?";
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const PieceType& type) {
+    
+    switch (type)
+    {
+    case PieceType::Pawn:
+        os << 'p';
+        break;
+    case PieceType::Knight:
+        os << 'n';
+        break;
+    case PieceType::Bishop:
+        os << 'b';
+        break;
+    case PieceType::Rook:
+        os << 'r';
+        break;
+    case PieceType::Queen:
+        os << 'q';
+        break;
+    case PieceType::King:
+        os << 'k';
+        break;
+    default:
+        os << '?';
+        break;
+    }
+
+    return os;
 }
