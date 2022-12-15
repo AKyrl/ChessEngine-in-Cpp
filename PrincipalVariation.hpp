@@ -10,8 +10,8 @@
 
 class PrincipalVariation {
 
-    int endScore;
-    bool endInMate;
+    int endScore = 0;
+    bool endInMate = false;
 
 public:
 

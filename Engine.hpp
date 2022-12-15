@@ -26,7 +26,7 @@ public:
 
     virtual void newGame() = 0;
     virtual PrincipalVariation pv(
-        const Board& board,
+        Board& board,
         const TimeInfo::Optional& timeInfo = std::nullopt
     ) = 0;
 

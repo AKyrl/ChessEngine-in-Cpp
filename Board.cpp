@@ -1,5 +1,5 @@
 #include "Board.hpp"
-#include "Board.hpp"
+
 
 
 
@@ -8,7 +8,7 @@
 #include <cmath>
 
 
-Board::Board() : boardTurn(PieceColor::White), boardEnpassantSquare(std::nullopt), bordCastlingRights(CastlingRights::All)
+Board::Board() : boardTurn(PieceColor::White), boardEnpassantSquare(std::nullopt), boardCastlingRights(CastlingRights::All)
 {
     std::fill(std::begin(bitboards), std::end(bitboards), 0ULL);
     std::fill(std::begin(occupancies), std::end(occupancies), 0ULL);
@@ -72,11 +72,11 @@ PieceColor Board::turn() const {
 }
 
 void Board::setCastlingRights(CastlingRights cr) {
-    bordCastlingRights = cr;
+    boardCastlingRights = cr;
 }
 
 CastlingRights Board::castlingRights() const {
-    return bordCastlingRights;
+    return boardCastlingRights;
 }
 
 void Board::setEnPassantSquare(const Square::Optional& square) {
@@ -132,21 +132,21 @@ void Board::makeMove(const Move& move) {
         removePiece(move.from(), fromPiece);
         setPiece(move.to(), fromPiece);
         if (fromPiece.color() == PieceColor::White)
-            setCastlingRights(bordCastlingRights & ~CastlingRights::White);
+            setCastlingRights(boardCastlingRights & ~CastlingRights::White);
         else
-            setCastlingRights(bordCastlingRights & ~CastlingRights::Black);
+            setCastlingRights(boardCastlingRights & ~CastlingRights::Black);
     }
     else
     {
         //remove casting rights if a rook is moved or captured
         if (move.from() == Square::A1 || move.to() == Square::A1)
-            setCastlingRights(bordCastlingRights & ~CastlingRights::WhiteQueenside);
+            setCastlingRights(boardCastlingRights & ~CastlingRights::WhiteQueenside);
         if (move.from() == Square::H1 || move.to() == Square::H1)
-            setCastlingRights(bordCastlingRights & ~CastlingRights::WhiteKingside);
+            setCastlingRights(boardCastlingRights & ~CastlingRights::WhiteKingside);
         if (move.from() == Square::A8 || move.to() == Square::A8)
-            setCastlingRights(bordCastlingRights & ~CastlingRights::BlackQueenside);
+            setCastlingRights(boardCastlingRights & ~CastlingRights::BlackQueenside);
         if (move.from() == Square::H8 || move.to() == Square::H8)
-            setCastlingRights(bordCastlingRights & ~CastlingRights::BlackKingside);
+            setCastlingRights(boardCastlingRights & ~CastlingRights::BlackKingside);
         
         //remove en Passant capture
         if (fromPiece.type() == PieceType::Pawn && move.to() == enPassantSquare())
@@ -364,7 +364,7 @@ void Board::pseudoLegalMoves(MoveVec& moves){
         //Casting moves
         if (boardTurn == PieceColor::White)
         {
-            if ((bordCastlingRights & CastlingRights::WhiteKingside) == CastlingRights::WhiteKingside)
+            if ((boardCastlingRights & CastlingRights::WhiteKingside) == CastlingRights::WhiteKingside)
             {
                 //check if middle possitions are empty
                 if (!getBit(occupancies[Both], 5) && !getBit(occupancies[Both], 6))
@@ -374,7 +374,7 @@ void Board::pseudoLegalMoves(MoveVec& moves){
                         addMoveIfLegal(moves, Move(fromSquare, Square::fromIndex(6).value()));
                 }
             }
-            else if( (bordCastlingRights & CastlingRights::WhiteQueenside) == CastlingRights::WhiteQueenside)
+            else if( (boardCastlingRights & CastlingRights::WhiteQueenside) == CastlingRights::WhiteQueenside)
             {
                 //check if middle possitions are empty
                 if (!getBit(occupancies[Both], 1) && !getBit(occupancies[Both], 2) && !getBit(occupancies[Both], 3))
@@ -387,7 +387,7 @@ void Board::pseudoLegalMoves(MoveVec& moves){
         }
         else
         {
-            if ((bordCastlingRights & CastlingRights::BlackKingside) == CastlingRights::BlackKingside)
+            if ((boardCastlingRights & CastlingRights::BlackKingside) == CastlingRights::BlackKingside)
             {
                 //check if middle possitions are empty
                 if (!getBit(occupancies[Both], 62) && !getBit(occupancies[Both], 61))
@@ -397,7 +397,7 @@ void Board::pseudoLegalMoves(MoveVec& moves){
                         addMoveIfLegal(moves, Move(fromSquare, Square::fromIndex(62).value()));
                 }
             }
-            else if ((bordCastlingRights & CastlingRights::BlackQueenside) == CastlingRights::BlackQueenside)
+            else if ((boardCastlingRights & CastlingRights::BlackQueenside) == CastlingRights::BlackQueenside)
             {
                 //check if middle possitions are empty
                 if (!getBit(occupancies[Both], 59) && !getBit(occupancies[Both], 58) && !getBit(occupancies[Both], 57))
@@ -568,7 +568,7 @@ void Board::pseudoLegalMovesFrom(const Square& from,
         //Casting moves
         if (boardTurn == PieceColor::White)
         {
-            if ((bordCastlingRights & CastlingRights::WhiteKingside) == CastlingRights::WhiteKingside)
+            if ((boardCastlingRights & CastlingRights::WhiteKingside) == CastlingRights::WhiteKingside)
             {
                 //check if middle possitions are empty
                 if (!getBit(occupancies[Both], 5) && !getBit(occupancies[Both], 6))
@@ -578,7 +578,7 @@ void Board::pseudoLegalMovesFrom(const Square& from,
                         addMoveIfLegal(moves, Move(from, Square::fromIndex(6).value()));
                 }
             }
-            else if ((bordCastlingRights & CastlingRights::WhiteQueenside) == CastlingRights::WhiteQueenside)
+            else if ((boardCastlingRights & CastlingRights::WhiteQueenside) == CastlingRights::WhiteQueenside)
             {
                 //check if middle possitions are empty
                 if (!getBit(occupancies[Both], 1) && !getBit(occupancies[Both], 2) && !getBit(occupancies[Both], 3))
@@ -591,7 +591,7 @@ void Board::pseudoLegalMovesFrom(const Square& from,
         }
         else
         {
-            if ((bordCastlingRights & CastlingRights::BlackKingside) == CastlingRights::BlackKingside)
+            if ((boardCastlingRights & CastlingRights::BlackKingside) == CastlingRights::BlackKingside)
             {
                 //check if middle possitions are empty
                 if (!getBit(occupancies[Both], 62) && !getBit(occupancies[Both], 61))
@@ -601,7 +601,7 @@ void Board::pseudoLegalMovesFrom(const Square& from,
                         addMoveIfLegal(moves, Move(from, Square::fromIndex(62).value()));
                 }
             }
-            else if ((bordCastlingRights & CastlingRights::BlackQueenside) == CastlingRights::BlackQueenside)
+            else if ((boardCastlingRights & CastlingRights::BlackQueenside) == CastlingRights::BlackQueenside)
             {
                 //check if middle possitions are empty
                 if (!getBit(occupancies[Both], 59) && !getBit(occupancies[Both], 58) && !getBit(occupancies[Both], 57))
@@ -691,6 +691,12 @@ bool Board::isSquareAttacked(int square, PieceColor side) const
     }
 
     return false;
+}
+
+bool Board::isKingInCheck()
+{
+    uint64_t bb = turn() == PieceColor::White ? bitboards[K] : bitboards[k];
+    return isSquareAttacked(getLSPawnIndex(bb), !turn());
 }
 
 void Board::addMoveIfLegal(Board::MoveVec& moves, Move move) 
@@ -942,4 +948,26 @@ int Board::evaluate()
      
 
     return turn() == PieceColor::White ? score : -score;
+}
+
+void Board::storeBoard()
+{
+    for (int i = 0; i < 12; i++)
+        backup_bitboards[i] = bitboards[i];
+    for (int i = 0; i < 3; i++)
+        backup_occupancies[i] = occupancies[i];
+    backup_boardTurn = boardTurn;
+    backup_boardCastlingRights = boardCastlingRights;
+    backup_boardEnpassantSquare = boardEnpassantSquare;
+}
+
+void Board::restoreBoard()
+{
+    for (int i = 0; i < 12; i++)
+        bitboards[i] = backup_bitboards[i];
+    for (int i = 0; i < 3; i++)
+        occupancies[i] = backup_occupancies[i];
+    boardTurn = backup_boardTurn;
+    boardCastlingRights = backup_boardCastlingRights;
+    boardEnpassantSquare = backup_boardEnpassantSquare;
 }

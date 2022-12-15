@@ -22,10 +22,17 @@ private:
     uint64_t occupancies[3];
 
     PieceColor boardTurn;
-    CastlingRights bordCastlingRights;
+    CastlingRights boardCastlingRights;
     Square::Optional boardEnpassantSquare;
 
     Attacks boardAttacks;
+
+    //For restoring after move
+    uint64_t backup_bitboards[12];
+    uint64_t backup_occupancies[3];
+    PieceColor backup_boardTurn;
+    CastlingRights backup_boardCastlingRights;
+    Square::Optional backup_boardEnpassantSquare;
 
 public:
 
@@ -54,6 +61,8 @@ public:
 
     // check if a square is attacked by given side
     bool isSquareAttacked(int square, PieceColor side) const;
+    bool isKingInCheck();
+
     // add a move to the Vec if its legal
     void addMoveIfLegal(Board::MoveVec& moves, Move move);
 
@@ -61,6 +70,9 @@ public:
     int getGamePhase();
 
     int evaluate();
+
+    void storeBoard();
+    void restoreBoard();
 };
 
 

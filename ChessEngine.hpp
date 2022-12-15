@@ -14,10 +14,12 @@ public:
 
     void newGame();
     PrincipalVariation pv(
-        const Board& board,
+        Board& board,
         const TimeInfo::Optional& timeInfo = std::nullopt
     );
 
+    int abSearch(int depth, int alpha, int beta, Board& board, PrincipalVariation * pv);
+    //bool isNodeRepeated();
 };
 
 #endif
