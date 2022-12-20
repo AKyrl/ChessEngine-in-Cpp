@@ -17,7 +17,7 @@ Square::Optional Square::fromCoordinates(Coordinate file, Coordinate rank) {
 }
 
 Square::Optional Square::fromIndex(Index index) {
-    if(index >= 0 && index < 64)
+    if( index < 64)
         return Square(index);
     else
         return std::nullopt;

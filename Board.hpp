@@ -12,6 +12,15 @@
 #include <iosfwd>
 #include <vector>
 
+struct BoardCoppy
+{
+    uint64_t backup_bitboards[12];
+    uint64_t backup_occupancies[3];
+    PieceColor backup_boardTurn;
+    CastlingRights backup_boardCastlingRights;
+    Square::Optional backup_boardEnpassantSquare;
+};
+
 class Board {
 private:
     // white        black
@@ -28,11 +37,11 @@ private:
     Attacks boardAttacks;
 
     //For restoring after move
-    uint64_t backup_bitboards[12];
+    /*uint64_t backup_bitboards[12];
     uint64_t backup_occupancies[3];
     PieceColor backup_boardTurn;
     CastlingRights backup_boardCastlingRights;
-    Square::Optional backup_boardEnpassantSquare;
+    Square::Optional backup_boardEnpassantSquare;*/
 
 public:
 
@@ -71,8 +80,8 @@ public:
 
     int evaluate();
 
-    void storeBoard();
-    void restoreBoard();
+    BoardCoppy storeBoard();
+    void restoreBoard(BoardCoppy cp);
 };
 
 

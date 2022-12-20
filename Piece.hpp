@@ -31,6 +31,8 @@ public:
 
     static Optional fromSymbol(char symbol);
 
+    int toInt();
+
     PieceColor color() const;
     PieceType type() const;
 };

@@ -7,6 +7,7 @@
 #include "Fen.hpp"
 #include "Board.hpp"
 
+
 static std::unique_ptr<Engine> createEngine() {
     return EngineFactory::createEngine();
 }
@@ -19,7 +20,7 @@ static void testGameEnd(const char* fen, bool isMate) {
     REQUIRE(board.has_value());
 
     auto pv = engine->pv(board.value());
-
+    
     REQUIRE(pv.isMate() == isMate);
     REQUIRE(pv.score() == 0);
     REQUIRE(pv.length() == 0);
@@ -46,3 +47,4 @@ TEST_CASE("Engine detects stalemate", "[Engine][Stalemate]") {
 
     testGameEnd(fen, false);
 }
+

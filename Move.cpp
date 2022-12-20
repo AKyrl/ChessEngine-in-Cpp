@@ -1,13 +1,19 @@
 #include "Move.hpp"
 
-#include <ostream>
-
-Move::Move(const Square& from, const Square& to,
-           const std::optional<PieceType>& promotion) : mvFrom(from), mvTo(to), mvPromotion(promotion)
+Move::Move() : mvFrom(Square::A1), mvTo(Square::A1)
 {
-   /* mvFrom = from;
-    mvTo = to;
-    mvPromotion = promotion;*/
+     
+}
+
+Move::Move(const Square& from, const Square& to, 
+           const std::optional<PieceType>& promotion, int score) :mvFrom(from), mvTo(to)//, mvPromotion(promotion), moveScore(score)
+
+{
+    // mvFrom = from.fromIndex(from.index()).value();
+    // mvTo = to.fromIndex(to.index()).value();
+    mvPromotion = promotion;
+    moveScore = score;
+    
 }
 
 Move::Optional Move::fromUci(const std::string& uci) {
@@ -53,6 +59,16 @@ std::optional<PieceType> Move::promotion() const {
     return mvPromotion;
 }
 
+int Move::score() const
+{
+    return moveScore;
+}
+
+void Move::setScore(int s)
+{
+    moveScore = s;
+}
+
 std::ostream& operator<<(std::ostream& os, const Move& move) {
     os << move.from();
     os << move.to();
@@ -63,6 +79,9 @@ std::ostream& operator<<(std::ostream& os, const Move& move) {
 
 
 bool operator<(const Move& lhs, const Move& rhs) {
+    if (lhs.score() < rhs.score())
+        return true;
+    
     if (lhs.from() < rhs.from())
         return true;
     else if (lhs.from() == rhs.from())
@@ -90,9 +109,17 @@ bool operator<(const Move& lhs, const Move& rhs) {
 
 }
 
+bool operator>(const Move& lhs, const Move& rhs) {
+    return (lhs.score() > rhs.score());
+}
+
+
 bool operator==(const Move& lhs, const Move& rhs) {
-    if (lhs.from() == rhs.from() && lhs.to() == rhs.to() && lhs.promotion() == rhs.promotion())
+    if (lhs.from() == rhs.from() && lhs.to() == rhs.to() && lhs.promotion() == rhs.promotion() && lhs.score() == rhs.score())
         return true;
     else
         return false;
 }
+
+
+

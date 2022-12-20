@@ -40,6 +40,54 @@ Piece::Optional Piece::fromSymbol(char symbol) {
     
 }
 
+int Piece::toInt()
+{
+    PieceColor c = color();
+    PieceType t = type();
+    
+    if (c == PieceColor::White)
+    {
+        switch (t)
+        {
+        case PieceType::Pawn:
+            return 0;
+        case PieceType::Knight:
+            return 1;
+        case PieceType::Bishop:
+            return 2;
+        case PieceType::Rook:
+            return 3;
+        case PieceType::Queen:
+            return 4;
+        case PieceType::King:
+            return 5;
+        default:
+            return 69;
+        }
+    }
+    else
+    {
+        switch (t)
+        {
+        case PieceType::Pawn:
+            return 6;
+        case PieceType::Knight:
+            return 7;
+        case PieceType::Bishop:
+            return 8;
+        case PieceType::Rook:
+            return 9;
+        case PieceType::Queen:
+            return 10;
+        case PieceType::King:
+            return 11;
+        default:
+            return 69;
+        }
+    }
+
+}
+
 PieceColor Piece::color() const {
     return piece_color;
 }

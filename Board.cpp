@@ -8,16 +8,23 @@
 #include <cmath>
 
 
-Board::Board() : boardTurn(PieceColor::White), boardEnpassantSquare(std::nullopt), boardCastlingRights(CastlingRights::All)
+Board::Board()
 {
+    boardTurn = PieceColor::White;
+    boardEnpassantSquare = std::nullopt;
+    boardCastlingRights = CastlingRights::All;
+
     std::fill(std::begin(bitboards), std::end(bitboards), 0ULL);
     std::fill(std::begin(occupancies), std::end(occupancies), 0ULL);
 
     boardAttacks = Attacks();
 
-    /*bitboards[0] = not_GH_file;
-    occupancies[0] = not_GH_file;
-    occupancies[2] = not_GH_file;*/
+    ////init backups
+    //std::fill(std::begin(backup_bitboards), std::end(backup_bitboards), 0ULL);
+    //std::fill(std::begin(backup_occupancies), std::end(backup_occupancies), 0ULL);
+    //backup_boardTurn = PieceColor::White;
+    //backup_boardEnpassantSquare = std::nullopt;
+    //backup_boardCastlingRights = CastlingRights::All;
         
 }
 
@@ -255,13 +262,13 @@ void Board::pseudoLegalMoves(MoveVec& moves){
 
             if (toSquare.rank() == promotionRank)
             {
-                moves.push_back(Move(fromSquare, toSquare, PieceType::Knight));
-                moves.push_back(Move(fromSquare, toSquare, PieceType::Bishop));
-                moves.push_back(Move(fromSquare, toSquare, PieceType::Rook));
-                moves.push_back(Move(fromSquare, toSquare, PieceType::Queen));
+                addMoveIfLegal(moves, Move(fromSquare, toSquare, PieceType::Knight));
+                addMoveIfLegal(moves, Move(fromSquare, toSquare, PieceType::Bishop));
+                addMoveIfLegal(moves, Move(fromSquare, toSquare, PieceType::Rook));
+                addMoveIfLegal(moves, Move(fromSquare, toSquare, PieceType::Queen));
             }
             else
-                moves.push_back(Move(fromSquare, toSquare));
+                addMoveIfLegal(moves, (Move(fromSquare, toSquare)));
 
             popBit(attacks, toSquare.index());
         }
@@ -453,10 +460,7 @@ void Board::pseudoLegalMovesFrom(const Square& from,
             {
                 if (opToSquare.value().rank() == promotionRank)
                 {
-                    /*moves.push_back(Move(from, opToSquare.value(), PieceType::Knight));
-                    moves.push_back(Move(from, opToSquare.value(), PieceType::Bishop));
-                    moves.push_back(Move(from, opToSquare.value(), PieceType::Rook));
-                    moves.push_back(Move(from, opToSquare.value(), PieceType::Queen));*/
+   
                     addMoveIfLegal(moves, Move(from, opToSquare.value(), PieceType::Knight));
                     addMoveIfLegal(moves, Move(from, opToSquare.value(), PieceType::Bishop));
                     addMoveIfLegal(moves, Move(from, opToSquare.value(), PieceType::Rook));
@@ -695,9 +699,10 @@ bool Board::isSquareAttacked(int square, PieceColor side) const
 
 bool Board::isKingInCheck()
 {
-    uint64_t bb = turn() == PieceColor::White ? bitboards[K] : bitboards[k];
+    uint64_t bb = (turn() == PieceColor::White) ? bitboards[K] : bitboards[k];
     return isSquareAttacked(getLSPawnIndex(bb), !turn());
 }
+
 
 void Board::addMoveIfLegal(Board::MoveVec& moves, Move move) 
 {
@@ -705,7 +710,8 @@ void Board::addMoveIfLegal(Board::MoveVec& moves, Move move)
     if (!optPiece.has_value())
         return;
     Piece fromPiece = optPiece.value();
-    Piece::Optional optToPiece = Board::piece(move.to());
+
+    BoardCoppy copy = storeBoard();
     
     if (fromPiece.type() == PieceType::King)
     {
@@ -758,57 +764,7 @@ void Board::addMoveIfLegal(Board::MoveVec& moves, Move move)
     if (!isSquareAttacked(getLSPawnIndex(bb), !fromPiece.color()))
         moves.push_back(move);
 
-
-    // reverse move
-    if (fromPiece.type() == PieceType::King)
-    {
-        int diff = std::abs((int)move.from().file() - (int)move.to().file());
-        // if casting move rook
-        if (diff > 1)
-        {
-            if (move.to() == Square::G1)
-            {
-                setPiece(Square::H1, Piece(PieceColor::White, PieceType::Rook));
-                removePiece(Square::F1, Piece(PieceColor::White, PieceType::Rook));
-            }
-            else if (move.to() == Square::G8)
-            {
-                
-                setPiece(Square::H8, Piece(PieceColor::Black, PieceType::Rook));
-                removePiece(Square::F8, Piece(PieceColor::Black, PieceType::Rook));
-            }
-            else  if (move.to() == Square::C1)
-            {
-                setPiece(Square::A1, Piece(PieceColor::White, PieceType::Rook));
-                removePiece(Square::D1, Piece(PieceColor::White, PieceType::Rook));
-            }
-            else  if (move.to() == Square::C8)
-            {
-                setPiece(Square::A8, Piece(PieceColor::Black, PieceType::Rook));
-                removePiece(Square::D8, Piece(PieceColor::Black, PieceType::Rook));
-            }
-        }
-        //normal king move
-        setPiece(move.from(), fromPiece);
-        removePiece(move.to(), fromPiece);
-        setPiece(move.to(), optToPiece);
-    }
-    else
-    {
-        //remove en Passant capture
-        if (fromPiece.type() == PieceType::Pawn && move.to() == enPassantSquare())
-        {
-            if (fromPiece.color() == PieceColor::White)
-                setPiece(Square::fromCoordinates(enPassantSquare().value().file(), 4).value(), Piece(PieceColor::Black, PieceType::Pawn));
-            else
-                setPiece(Square::fromCoordinates(enPassantSquare().value().file(), 3).value(), Piece(PieceColor::White, PieceType::Pawn));
-        }
-
-        setPiece(move.from(), fromPiece);
-        removePiece(move.to(), fromPiece);
-        setPiece(move.to(), optToPiece);
-    }
-
+    restoreBoard(copy);
 
 }
 
@@ -843,10 +799,10 @@ int Board::evaluate()
     {
         bb = bitboards[piece];
 
-        int square = getLSPawnIndex(bb);
-
         while (bb)
         {
+            int square = getLSPawnIndex(bb);
+            
             // Add material score
             earlyScore += earlygameMaterialScore[piece];
             endScore += endgameMaterialScore[piece];
@@ -856,74 +812,74 @@ int Board::evaluate()
             {
             case P:
             {
-                earlyScore += earlygamePositionalScore[P][square];
-                endScore += endgamePositionalScore[P][square];
+                earlyScore += earlygamePositionalScore[P][verticalflipIndex[square]];
+                endScore += endgamePositionalScore[P][verticalflipIndex[square]];
                 break;
             }
             case N:
             {
-                earlyScore += earlygamePositionalScore[N][square];
-                endScore += endgamePositionalScore[N][square];
+                earlyScore += earlygamePositionalScore[N][verticalflipIndex[square]];
+                endScore += endgamePositionalScore[N][verticalflipIndex[square]];
                 break;
             }
             case B:
             {
-                earlyScore += earlygamePositionalScore[B][square];
-                endScore += endgamePositionalScore[B][square];
+                earlyScore += earlygamePositionalScore[B][verticalflipIndex[square]];
+                endScore += endgamePositionalScore[B][verticalflipIndex[square]];
                 break;
             }
             case R:
             {
-                earlyScore += earlygamePositionalScore[R][square];
-                endScore += endgamePositionalScore[R][square];
+                earlyScore += earlygamePositionalScore[R][verticalflipIndex[square]];
+                endScore += endgamePositionalScore[R][verticalflipIndex[square]];
                 break;
             }
             case Q:
             {
-                earlyScore += earlygamePositionalScore[Q][square];
-                endScore += endgamePositionalScore[Q][square];
+                earlyScore += earlygamePositionalScore[Q][verticalflipIndex[square]];
+                endScore += endgamePositionalScore[Q][verticalflipIndex[square]];
                 break;
             }
             case K:
             {
-                earlyScore += earlygamePositionalScore[K][square];
-                endScore += endgamePositionalScore[K][square];
+                earlyScore += earlygamePositionalScore[K][verticalflipIndex[square]];
+                endScore += endgamePositionalScore[K][verticalflipIndex[square]];
                 break;
             }
             case p:
             {
-                earlyScore -= earlygamePositionalScore[P][verticalflipIndex[square]];
-                endScore -= endgamePositionalScore[P][verticalflipIndex[square]];
+                earlyScore -= earlygamePositionalScore[P][square];
+                endScore -= endgamePositionalScore[P][square];
                 break;
             }
             case n:
             {
-                earlyScore -= earlygamePositionalScore[N][verticalflipIndex[square]];
-                endScore -= endgamePositionalScore[N][verticalflipIndex[square]];
+                earlyScore -= earlygamePositionalScore[N][square];
+                endScore -= endgamePositionalScore[N][square];
                 break;
             }
             case b:
             {
-                earlyScore -= earlygamePositionalScore[B][verticalflipIndex[square]];
-                endScore -= endgamePositionalScore[B][verticalflipIndex[square]];
+                earlyScore -= earlygamePositionalScore[B][square];
+                endScore -= endgamePositionalScore[B][square];
                 break;
             }
             case r:
             {
-                earlyScore -= earlygamePositionalScore[R][verticalflipIndex[square]];
-                endScore -= endgamePositionalScore[R][verticalflipIndex[square]];
+                earlyScore -= earlygamePositionalScore[R][square];
+                endScore -= endgamePositionalScore[R][square];
                 break;
             }
             case q:
             {
-                earlyScore -= earlygamePositionalScore[Q][verticalflipIndex[square]];
-                endScore -= endgamePositionalScore[Q][verticalflipIndex[square]];
+                earlyScore -= earlygamePositionalScore[Q][square];
+                endScore -= endgamePositionalScore[Q][square];
                 break;
             }
             case k:
             {
-                earlyScore -= earlygamePositionalScore[K][verticalflipIndex[square]];
-                endScore -= endgamePositionalScore[K][verticalflipIndex[square]];
+                earlyScore -= earlygamePositionalScore[K][square];
+                endScore -= endgamePositionalScore[K][square];
                 break;
             }
             default:
@@ -950,24 +906,28 @@ int Board::evaluate()
     return turn() == PieceColor::White ? score : -score;
 }
 
-void Board::storeBoard()
+BoardCoppy Board::storeBoard()
 {
+    BoardCoppy cp;
+
     for (int i = 0; i < 12; i++)
-        backup_bitboards[i] = bitboards[i];
+        cp.backup_bitboards[i] = bitboards[i];
     for (int i = 0; i < 3; i++)
-        backup_occupancies[i] = occupancies[i];
-    backup_boardTurn = boardTurn;
-    backup_boardCastlingRights = boardCastlingRights;
-    backup_boardEnpassantSquare = boardEnpassantSquare;
+        cp.backup_occupancies[i] = occupancies[i];
+    cp.backup_boardTurn = boardTurn;
+    cp.backup_boardCastlingRights = boardCastlingRights;
+    cp.backup_boardEnpassantSquare = boardEnpassantSquare;
+
+    return cp;
 }
 
-void Board::restoreBoard()
+void Board::restoreBoard(BoardCoppy cp)
 {
     for (int i = 0; i < 12; i++)
-        bitboards[i] = backup_bitboards[i];
+        bitboards[i] = cp.backup_bitboards[i];
     for (int i = 0; i < 3; i++)
-        occupancies[i] = backup_occupancies[i];
-    boardTurn = backup_boardTurn;
-    boardCastlingRights = backup_boardCastlingRights;
-    boardEnpassantSquare = backup_boardEnpassantSquare;
+        occupancies[i] = cp.backup_occupancies[i];
+    boardTurn = cp.backup_boardTurn;
+    boardCastlingRights = cp.backup_boardCastlingRights;
+    boardEnpassantSquare = cp.backup_boardEnpassantSquare;
 }

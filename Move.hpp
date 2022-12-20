@@ -11,13 +11,15 @@
 class Move {
     Square mvFrom, mvTo;
     std::optional<PieceType> mvPromotion = std::nullopt;
+    int moveScore;
 
 public:
 
     using Optional = std::optional<Move>;
 
-    Move(const Square& from, const Square& to,
-         const std::optional<PieceType>& promotion = std::nullopt);
+    Move();
+    Move(const Square& from, const Square& to, 
+         const std::optional<PieceType>& promotion = std::nullopt, int score = 0);
 
     static Optional fromUci(const std::string& uci);
 
@@ -25,12 +27,17 @@ public:
     Square to() const;
     std::optional<PieceType> promotion() const;
 
+    int score() const;
+    void setScore(int s);
+    
 };
 
 std::ostream& operator<<(std::ostream& os, const Move& move);
 
 // Needed for std::map, std::set
 bool operator<(const Move& lhs, const Move& rhs);
+bool operator>(const Move& lhs, const Move& rhs);
 bool operator==(const Move& lhs, const Move& rhs);
+
 
 #endif
