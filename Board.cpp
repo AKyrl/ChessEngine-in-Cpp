@@ -1,4 +1,5 @@
 #include "Board.hpp"
+#include "Board.hpp"
 
 
 
@@ -930,4 +931,14 @@ void Board::restoreBoard(BoardCoppy cp)
     boardTurn = cp.backup_boardTurn;
     boardCastlingRights = cp.backup_boardCastlingRights;
     boardEnpassantSquare = cp.backup_boardEnpassantSquare;
+}
+
+bool Board::isStarting()
+{
+    if(occupancies[2] == 18446462598732906495ULL) //starting occ
+        return true;
+    // black nothing moved
+    if (occupancies[1] == 18446462598732840960ULL)
+        return true;
+    return false;
 }

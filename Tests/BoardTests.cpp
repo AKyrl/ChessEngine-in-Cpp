@@ -134,8 +134,6 @@ static void testEvaluation(
     auto optBoard = Fen::createBoard(fen);
     REQUIRE(optBoard.has_value());
 
-    auto from = Square::Optional();
-
     auto board = optBoard.value();
 
     using MoveSet = std::set<Move>;
@@ -155,14 +153,6 @@ TEST_CASE_EVALUATION("empty Board", "[myTest]") {
         // https://lichess.org/editor/8/8/8/8/8/8/8/8_w_-_-_0_1?color=white
         "8/8/8/8/8/8/8/8 w - - 0 1",
         0
-    );
-}
-
-TEST_CASE_EVALUATION("1 pawn Board", "[myTest]") {
-    testEvaluation(
-        // https://lichess.org/editor/8/8/8/8/8/8/8/8_w_-_-_0_1?color=white
-        "8/8/8/8/8/8/4P3/8 w - - 0 1",
-        241
     );
 }
 

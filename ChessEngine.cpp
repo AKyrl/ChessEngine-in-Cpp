@@ -2,16 +2,17 @@
 
 
 #include <algorithm>
-#include <iostream>
+//#include <iostream>
+
 
 std::string ChessEngine::name() const
 {
-	return "r0785071";
+	return "ChessKnave9000";
 }
 
 std::string ChessEngine::version() const
 {
-	return "v1.0";
+	return "1.1";
 }
 
 std::string ChessEngine::author() const
@@ -21,15 +22,42 @@ std::string ChessEngine::author() const
 
 void ChessEngine::newGame()
 {
+	turns = 3;
 }
 
 PrincipalVariation ChessEngine::pv(Board& board, const TimeInfo::Optional& timeInfo)
 {
-	//(void)timeInfo;
+	if (board.isStarting())
+		turns = 0;
+	if (turns == 0)
+	{
+		PrincipalVariation pv;
+		if (board.turn() == PieceColor::White)
+			pv.pvMoves.push_back(Move(Square::G1, Square::F3));
+		else
+			pv.pvMoves.push_back(Move(Square::G8, Square::F6));
+		turns++;
+		return pv;
+	}
+	if (turns == 1)
+	{
+		PrincipalVariation pv;
+		if (board.turn() == PieceColor::White)
+			pv.pvMoves.push_back(Move(Square::D2, Square::D4));
+		else {
+			if(board.piece(Square::D4).has_value())
+				pv.pvMoves.push_back(Move(Square::D7, Square::D5));
+			else
+				pv.pvMoves.push_back(Move(Square::E7, Square::E5));
+		}
+		turns++;
+		return pv;
+	}
+	turns++;
 
 	std::fill(std::begin(killerScores[0]), std::end(killerScores[0]), Move());
 	std::fill(std::begin(killerScores[1]), std::end(killerScores[1]), Move());
-	for (int i = 0; i < 12; i++) {
+	for (int i = P; i <= k; i++) {
 		std::fill(std::begin(historyScores[i]), std::end(historyScores[i]), 0);
 	}
 	PrincipalVariation pv;
@@ -37,36 +65,65 @@ PrincipalVariation ChessEngine::pv(Board& board, const TimeInfo::Optional& timeI
 	followingPV = false;
 	scorePV = false;
 
+	int alpha = -inf;
+	int beta = inf;
 	int maxDepth;
 
 	if (timeInfo.has_value())
 	{
-		//PrincipalVariation bestPV;
-		maxDepth = 5;
+		auto sideTimeInfo = board.turn() == PieceColor::White ? timeInfo.value().white : timeInfo.value().black;
 
+		if (timeInfo.value().movesToGo.has_value())
+			maxTime = sideTimeInfo.timeLeft / (timeInfo.value().movesToGo.value() + 1) - (std::chrono::milliseconds)200;
+		else
+			maxTime = sideTimeInfo.timeLeft / std::max(1, 45 - turns) - (std::chrono::milliseconds)200;
+		
+		maxDepth = 9;
+		start = std::chrono::system_clock::now();
 		// Itarative Deepening
 		for (int currentDepth = 1; currentDepth <= maxDepth; currentDepth++)
 		{
-			auto timeBefore = board.turn() == PieceColor::White ? timeInfo.value().white.timeLeft : timeInfo.value().black.timeLeft;
-
+			
 			followingPV = true;
-			int score = abSearch(currentDepth, -inf, inf, board, &pv);
-			pv.setScore(score);
-			auto timeAfter = board.turn() == PieceColor::White ? timeInfo.value().white.timeLeft : timeInfo.value().black.timeLeft;
-
-			if (timeAfter < timeBefore - timeAfter)
+			int score = abSearch(currentDepth, alpha, beta, board, &pv);
+			
+			//std::cout << "Current depth = " << currentDepth << std::endl;
+			auto time = std::chrono::system_clock::now() - start;
+			if (time >= maxTime)
 				break;
+
+			if ((score <= alpha) || (score >= beta)) {
+				alpha = -inf;
+				beta = inf;
+				currentDepth--; //go again at same depth 
+				continue;
+			}
+			alpha = score - 50;
+			beta = score + 50;
 		}
 	}
 	else
 	{
+		maxTime = (std::chrono::milliseconds)20000;
 		maxDepth = 5;
 		followingPV = true;
-
+		start = std::chrono::system_clock::now();
 		for (int currentDepth = 1; currentDepth <= maxDepth; currentDepth++)
 		{
-			int score = abSearch(maxDepth, -inf, inf, board, &pv);
-			pv.setScore(score);
+			int score = abSearch(maxDepth, alpha, beta, board, &pv);
+
+			auto time = std::chrono::system_clock::now() - start;
+			if (time >= maxTime)
+				break;
+
+			if ((score <= alpha) || (score >= beta)) {
+				alpha = -inf;    
+				beta = inf;      
+				currentDepth--; //go again at same depth 
+				continue;
+			}
+			alpha = score - 50;  
+			beta = score + 50;
 		}
 	}
 	return pv;
@@ -102,11 +159,17 @@ int ChessEngine::quiescence(int alpha, int beta, Board &board, PrincipalVariatio
 		board.makeMove(m);
 		int score = -quiescence(-beta, -alpha, board, &pv);
 		board.restoreBoard(copy);
+
+		auto time = std::chrono::system_clock::now() - start;
+		if (time >= maxTime)
+			return 0;
+
 		if (score >= beta)
 			return beta;
 		if (score > alpha)
 		{
 			alpha = score;
+			pPV->setScore(score);
 			pPV->pvMoves.clear();
 			pPV->pvMoves.push_back(m);
 			pPV->pvMoves.insert(pPV->pvMoves.end(), pv.pvMoves.begin(), pv.pvMoves.end());
@@ -123,7 +186,7 @@ int ChessEngine::abSearch(int depth, int alpha, int beta, Board &board, Principa
 
 	// hard cutoff in case of max ply reached
 	if (pPV->length() > 64)
-		return board.evaluate();;
+		return board.evaluate();
 
 	if (depth < 1)
 		return quiescence(alpha, beta, board, pPV);
@@ -159,6 +222,11 @@ int ChessEngine::abSearch(int depth, int alpha, int beta, Board &board, Principa
 		board.makeMove(m);
 		score = -abSearch(depth - 1, -beta, -alpha, board, &pv);
 		board.restoreBoard(copy);
+
+		auto time = std::chrono::system_clock::now() - start;
+		if (time >= maxTime)
+			return 0;
+
 		if (score >= beta)
 		{
 			killerScores[1][pPV->length()] = killerScores[0][pPV->length()];
@@ -172,6 +240,7 @@ int ChessEngine::abSearch(int depth, int alpha, int beta, Board &board, Principa
 				historyScores[optAttackPiece.value().toInt()][m.to().index()] += depth; 
 				
 			alpha = score;
+			pPV->setScore(score);
 			pPV->pvMoves.clear();
 			pPV->pvMoves.push_back(m);
 			pPV->pvMoves.insert(pPV->pvMoves.end(), pv.pvMoves.begin(), pv.pvMoves.end());
@@ -207,6 +276,19 @@ int ChessEngine::scoreMove(Move &move,  Board &board, const PrincipalVariation &
 
 	if(!optAttackPiece.has_value())
 		return 0;
+	if (optAttackPiece.value().type() == PieceType::Pawn && move.to() == board.enPassantSquare())// enpassat capture
+	{
+		auto pawnColor = optAttackPiece.value().color();
+		if(pawnColor == PieceColor::White)
+			return  mvv_lva[P][p] + 100000;
+		else
+			return  mvv_lva[p][P] + 100000;
+	}
+	//rank Castiling higher in search
+	if (optAttackPiece.value().type() == PieceType::King && std::abs((int)move.from().file() - (int)move.to().file()) > 1)
+	{
+		return 70000;
+	}
     if(optCapturePiece.has_value())// it is a capture move
 	{
 		int capturePiece = optCapturePiece.value().toInt();

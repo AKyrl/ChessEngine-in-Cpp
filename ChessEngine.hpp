@@ -5,9 +5,10 @@
 
 #include <memory>
 #include <array>
+#include <chrono>
 
 
-const int inf = 20000;
+const int inf = 50000;
 
  // MVV LVA scores[attack][capture]
 const int mvv_lva[12][12] = {
@@ -30,11 +31,14 @@ const int mvv_lva[12][12] = {
 
 
 class ChessEngine : public Engine {
-    //Move killerScores[2][64];
+    int turns = 3;
     Move killerScores[2][64];
     int historyScores[12][64];
     bool followingPV = false;
     bool scorePV = false;
+
+    std::chrono::milliseconds maxTime = (std::chrono::milliseconds)20000;
+    std::chrono::time_point<std::chrono::system_clock> start = std::chrono::system_clock::now();
 public:
 
     std::string name() const;
@@ -52,13 +56,7 @@ public:
 
     //score move using MMV LVA
     int scoreMove(Move &move, Board &board, const PrincipalVariation &pv);
-
-    //bool isNodeRepeated();
 };
 
-
-int my_partition(std::vector<Move>& v, int start, int end);
-void quick_sort_rec(std::vector<Move>& to_sort, int start, int end);
-inline void quick_sort(std::vector<Move>& to_sort);
 
 #endif

@@ -36,20 +36,11 @@ private:
 
     Attacks boardAttacks;
 
-    //For restoring after move
-    /*uint64_t backup_bitboards[12];
-    uint64_t backup_occupancies[3];
-    PieceColor backup_boardTurn;
-    CastlingRights backup_boardCastlingRights;
-    Square::Optional backup_boardEnpassantSquare;*/
-
 public:
 
 
     using Optional = std::optional<Board>;
     using MoveVec = std::vector<Move>;
-
-    //Board::MoveVec getKnightMoves();
 
     Board();
 
@@ -82,6 +73,8 @@ public:
 
     BoardCoppy storeBoard();
     void restoreBoard(BoardCoppy cp);
+
+    bool isStarting();
 };
 
 

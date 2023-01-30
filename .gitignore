@@ -5,3 +5,4 @@ uci-log.txt
 out
 .vs
 Tests/lichess_db_puzzle.csv
+*.xml
